@@ -24,8 +24,11 @@ import com.pratclot.orderly.tools.isApiLive
 import com.pratclot.orderly.tools.isApp
 import com.pratclot.orderly.tools.isCommonAndroid
 import com.pratclot.orderly.tools.isCommonKotlin
+import com.pratclot.orderly.tools.isCommonKotlinTest
+import com.pratclot.orderly.tools.isDto
 import com.pratclot.orderly.tools.isJavaLibrary
 import com.pratclot.orderly.tools.isLayerApiFeature
+import com.pratclot.orderly.tools.isLayerApiFeatureCommonApi
 import com.pratclot.orderly.tools.isLayerRepository
 import com.pratclot.orderly.tools.isLayerScreen
 import com.pratclot.orderly.tools.isLayerUsecase
@@ -47,6 +50,7 @@ const val TASK_CREATE_SUBPROJECT_API_COMMON_LIVE = "createSubprojectApiCommonLiv
 const val TASK_CREATE_SUBPROJECT_DOMAIN = "createSubprojectDomain"
 const val TASK_CREATE_SUBPROJECT_DTO = "createSubprojectDto"
 const val TASK_CREATE_SUBPROJECT_COMMON_KOTLIN = "createSubprojectCommonKotlin"
+const val TASK_CREATE_SUBPROJECT_COMMON_KOTLIN_TEST = "createSubprojectCommonKotlinTest"
 const val TASK_CREATE_SUBPROJECT_COMMON_ANDROID = "createSubprojectCommonAndroid"
 const val TASK_CREATE_SUBPROJECT_FEATURE = "createSubprojectFeature"
 const val TASK_CREATE_ALL = "createAllSubprojects"
@@ -80,6 +84,10 @@ enum class CreateSubprojectTasks(val taskName: String, val defaultPath: String) 
         TASK_CREATE_SUBPROJECT_COMMON_ANDROID,
         ":$DEFAULT_DIR_NAME_COMMON:$DEFAULT_DIR_NAME_COMMON_ANDROID"
     ),
+    COMMON_KOTLIN_TEST(
+        TASK_CREATE_SUBPROJECT_COMMON_KOTLIN_TEST,
+        ":$DEFAULT_DIR_NAME_COMMON:$DEFAULT_DIR_NAME_COMMON_KOTLIN_TEST"
+    ),
 }
 
 /**
@@ -101,7 +109,7 @@ class OrderlyPlugin : Plugin<Project>, OrderlyPluginAbstraction {
                     val layerDir = layer.toString().lowercase()
                     val featureDir = featureName.lowercase()
                     val layerType = layer.projectType
-                    (listOf("mock", "live").takeIf { layer == DefaultFeatureLayers.API }
+                    (listOf("mock", "live", "commonapi").takeIf { layer == DefaultFeatureLayers.API }
                         ?: listOf(""))
                         .map { variantName ->
                             FeatureTask(
@@ -279,6 +287,24 @@ class OrderlyPlugin : Plugin<Project>, OrderlyPluginAbstraction {
                 srcDirTest.set(projectDir.get().resolve(expectedSrcPathTest))
             }
 
+        project.tasks.register(TASK_CREATE_SUBPROJECT_COMMON_KOTLIN_TEST, CreateSubproject::class.java)
+            .get()
+            .apply {
+                val path = with(extension) { "${dirNameCommon.get()}/${dirNameCommonKotlinTest.get()}" }
+                dir.set(path)
+                projectType.set(ProjectType.JAVA_LIB)
+                packageName.set(extension.packageName.get())
+
+                val expectedProjectDir = project.rootDir.resolve(path)
+                val expectedPackageDir = extension.packageName.get().replace('.', '/')
+                val expectedSrcPathMain = "src/main/kotlin/$expectedPackageDir"
+                val expectedSrcPathTest = "src/test/kotlin/$expectedPackageDir"
+                projectDir.set(expectedProjectDir)
+                buildFile.set(projectDir.get().resolve(BUILD_FILE_NAME))
+                srcDirKotlin.set(projectDir.get().resolve(expectedSrcPathMain))
+                srcDirTest.set(projectDir.get().resolve(expectedSrcPathTest))
+            }
+
         project.tasks.register(TASK_CREATE_SUBPROJECT_COMMON_ANDROID, CreateSubproject::class.java)
             .get()
             .apply {
@@ -402,6 +428,14 @@ class OrderlyPlugin : Plugin<Project>, OrderlyPluginAbstraction {
                     CONFIGURATION_IMPLEMENTATION,
                     getProjectByPath(":usecase:${name}")
                 )
+                it.dependencies.add(
+                    CONFIGURATION_IMPLEMENTATION,
+                    getDomain()
+                )
+                it.dependencies.add(
+                    CONFIGURATION_IMPLEMENTATION,
+                    getCommonKotlin()
+                )
 
                 it.setupDebugMinifyBuildType()
             }
@@ -439,6 +473,17 @@ class OrderlyPlugin : Plugin<Project>, OrderlyPluginAbstraction {
             it.plugins.apply("org.jetbrains.kotlin.jvm")
         }
         project.subprojects.filter { it.isLayerApiFeature() }.forEach {
+            it.dependencies.run {
+                add(CONFIGURATION_IMPLEMENTATION, getDto())
+                add(CONFIGURATION_IMPLEMENTATION, getApiCommon())
+                kotlin.runCatching {
+                    add(CONFIGURATION_IMPLEMENTATION, getProjectByPath(it.projectDir.parentFile.resolve("commonapi").path))
+                }.exceptionOrNull()?.let {
+                    println("Could not add dependency: $it")
+                }
+            }
+        }
+        project.subprojects.filter { it.isLayerApiFeatureCommonApi() }.forEach {
             it.dependencies.run {
                 add(CONFIGURATION_IMPLEMENTATION, getDto())
                 add(CONFIGURATION_IMPLEMENTATION, getApiCommon())
@@ -500,6 +545,13 @@ class OrderlyPlugin : Plugin<Project>, OrderlyPluginAbstraction {
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
                 }
+            }
+        project.subprojects.filter { it.isDto() }.forEach {
+            it.plugins.apply("org.jetbrains.kotlin.plugin.serialization")
+        }
+        project.subprojects.filter { it.isCommonKotlinTest() }
+            .forEach {
+
             }
     }
 

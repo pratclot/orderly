@@ -17,7 +17,7 @@ const val DEFAULT_DIR_NAME_COMMON = "common"
 const val DEFAULT_DIR_NAME_COMMON_ANDROID = "android"
 const val DEFAULT_DIR_NAME_COMMON_ANDROID_TEST = "androidtest"
 const val DEFAULT_DIR_NAME_COMMON_KOTLIN = "kotlin"
-const val DEFAULT_DIR_NAME_COMMON_TEST = "test"
+const val DEFAULT_DIR_NAME_COMMON_KOTLIN_TEST = "kotlintest"
 const val DEFAULT_FEATURE_NAME = "feature1"
 const val DEFAULT_PLUGINS = "kotlin-kapt"
 
@@ -31,6 +31,7 @@ abstract class OrderlyPluginExtension {
     abstract val dirNameDto: Property<String>
     abstract val dirNameCommon: Property<String>
     abstract val dirNameCommonKotlin: Property<String>
+    abstract val dirNameCommonKotlinTest: Property<String>
     abstract val dirNameCommonAndroid: Property<String>
 
     abstract val features: ListProperty<String>
@@ -74,6 +75,7 @@ abstract class OrderlyPluginExtension {
         dirNameDto.convention(DEFAULT_DIR_NAME_DTO)
         dirNameCommon.convention(DEFAULT_DIR_NAME_COMMON)
         dirNameCommonKotlin.convention(DEFAULT_DIR_NAME_COMMON_KOTLIN)
+        dirNameCommonKotlinTest.convention(DEFAULT_DIR_NAME_COMMON_KOTLIN_TEST)
         dirNameCommonAndroid.convention(DEFAULT_DIR_NAME_COMMON_ANDROID)
 
         features.convention(listOf(DEFAULT_FEATURE_NAME))

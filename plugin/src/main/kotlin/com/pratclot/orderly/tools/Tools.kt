@@ -92,6 +92,10 @@ fun Project.isLayerApiFeature() = with(path) {
     (startsWith(":api:") && (endsWith(":mock") || endsWith(":live")))
 }
 
+fun Project.isLayerApiFeatureCommonApi() = with(path) {
+    (startsWith(":api:") && (endsWith(":commonapi")))
+}
+
 fun Project.isApiCommonLive() = with(path) {
     equals(":api:common-live")
 }
@@ -102,6 +106,10 @@ fun Project.isApiCommon() = with(path) {
 
 fun Project.isCommonKotlin() = with(path) {
     equals(":common:kotlin")
+}
+
+fun Project.isCommonKotlinTest() = with(path) {
+    equals(":common:kotlintest")
 }
 
 fun Project.isCommonAndroid() = with(path) {
