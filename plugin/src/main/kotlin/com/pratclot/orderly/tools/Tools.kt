@@ -1,6 +1,7 @@
 package com.pratclot.orderly.tools
 
 import com.pratclot.orderly.BUILD_FILE_NAME
+import com.pratclot.orderly.GITIGNORE_FILE_NAME
 import com.pratclot.orderly.OrderlyPluginAbstraction
 import com.pratclot.orderly.data.ProjectType
 import com.pratclot.orderly.tools.ResourceLoader.copyFileFromResources
@@ -21,6 +22,15 @@ fun createFileBuildGradle(
             file
         )
     }
+}
+
+fun createFileGitIgnore(
+    file: File,
+) {
+    copyFileFromResources(
+        "$GITIGNORE_FILE_NAME.tpl",
+        file
+    )
 }
 
 fun createManifestFile(
@@ -116,16 +126,20 @@ fun Project.isCommonAndroid() = with(path) {
     equals(":common:android")
 }
 
+fun Project.isCommonAndroidTest() = with(path) {
+    equals(":common:androidtest")
+}
+
 fun Project.isJavaLibrary() = with(plugins) {
 //    This does not work because no plugins appear to be applied at `afterEvaluate` stage!
 //    hasPlugin("java-library")
-    (isLayerCommon() && !isCommonAndroid()) || isLayerApi() || isLayerRepository() || isLayerUsecase() || isDomain() || isDto()
+    (isLayerCommon() && !(isCommonAndroid() || isCommonAndroidTest())) || isLayerApi() || isLayerRepository() || isLayerUsecase() || isDomain() || isDto()
 }
 
 fun Project.isAndroidLibrary() = with(plugins) {
 //    This does not work because no plugins appear to be applied at `afterEvaluate` stage!
 //    hasPlugin("com.android.library")
-    isCommonAndroid() || isLayerScreen()
+    isCommonAndroid() || isCommonAndroidTest() || isLayerScreen()
 }
 
 fun Project.isAndroidApp() = with(plugins) {
@@ -173,9 +187,9 @@ fun Project.getFeatureName() = with(path) {
     split(':')[2]
 }
 
-fun Project.getProjectByPath(path: String) =
-    project.subprojects.find { it.path == path }
-        ?: noProject("There is no project with path: $path")
+fun Project.getProjectByPath(path1: String) =
+    project.subprojects.find { it.path == path1 }
+        ?: noProject("There is no project with Gradle path: $path1")
 
 fun noProject(message: String = ""): Nothing = throw ProjectNotYetGeneratedException(message)
 class ProjectNotYetGeneratedException(message: String) : IllegalStateException(message)
@@ -187,3 +201,6 @@ fun OrderlyPluginAbstraction.getDto() = getProjectByPath(":dto")
 fun OrderlyPluginAbstraction.getApiCommon() = getProjectByPath(":api:common")
 fun OrderlyPluginAbstraction.getApiCommonLive() = getProjectByPath(":api:common-live")
 fun OrderlyPluginAbstraction.getCommonKotlin() = getProjectByPath(":common:kotlin")
+fun OrderlyPluginAbstraction.getCommonKotlinTest() = getProjectByPath(":common:kotlintest")
+fun OrderlyPluginAbstraction.getCommonAndroid() = getProjectByPath(":common:android")
+fun OrderlyPluginAbstraction.getCommonAndroidTest() = getProjectByPath(":common:androidtest")

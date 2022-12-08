@@ -33,6 +33,7 @@ abstract class OrderlyPluginExtension {
     abstract val dirNameCommonKotlin: Property<String>
     abstract val dirNameCommonKotlinTest: Property<String>
     abstract val dirNameCommonAndroid: Property<String>
+    abstract val dirNameCommonAndroidTest: Property<String>
 
     abstract val features: ListProperty<String>
 
@@ -77,6 +78,7 @@ abstract class OrderlyPluginExtension {
         dirNameCommonKotlin.convention(DEFAULT_DIR_NAME_COMMON_KOTLIN)
         dirNameCommonKotlinTest.convention(DEFAULT_DIR_NAME_COMMON_KOTLIN_TEST)
         dirNameCommonAndroid.convention(DEFAULT_DIR_NAME_COMMON_ANDROID)
+        dirNameCommonAndroidTest.convention(DEFAULT_DIR_NAME_COMMON_ANDROID_TEST)
 
         features.convention(listOf(DEFAULT_FEATURE_NAME))
 
