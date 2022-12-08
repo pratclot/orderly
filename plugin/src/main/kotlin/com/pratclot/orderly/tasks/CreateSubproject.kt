@@ -4,22 +4,19 @@ import com.pratclot.orderly.data.ProjectType
 import com.pratclot.orderly.tools.ORDERLY_SETTINGS_GRADLE
 import com.pratclot.orderly.tools.SETTINGS_GRADLE
 import com.pratclot.orderly.tools.createFileBuildGradle
+import com.pratclot.orderly.tools.createFileGitIgnore
 import com.pratclot.orderly.tools.createManifestFile
-import com.pratclot.orderly.tools.hasNoLine
 import com.pratclot.orderly.tools.linkOrderlySettingsFile
 import com.pratclot.orderly.tools.linkSubprojectInSettings
 import com.pratclot.orderly.tools.settingsFileHasNoLinkToOrderlySettings
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import java.io.File
 import javax.inject.Inject
@@ -41,6 +38,9 @@ abstract class CreateSubproject @Inject constructor(private val objectFactory: O
 
     @get:OutputFile
     abstract val buildFile: Property<File>
+
+    @get:OutputFile
+    abstract val gitIgnoreFile: Property<File>
 
     @get:OutputDirectory
     abstract val srcDirKotlin: Property<File>
@@ -78,6 +78,7 @@ abstract class CreateSubproject @Inject constructor(private val objectFactory: O
     ) {
         project.mkdir(dir)
         createFileBuildGradle(buildFile.get(), projectType)
+        createFileGitIgnore(gitIgnoreFile.get())
         srcDirKotlin.get().mkdirs()
         srcDirTest.get().mkdirs()
         if (projectType in listOf(ProjectType.ANDROID_LIB, ProjectType.ANDROID_APP)) {
