@@ -628,6 +628,11 @@ class OrderlyPlugin : Plugin<Project>, OrderlyPluginAbstraction {
                     kapt("com.google.dagger:hilt-compiler:2.42")
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+
+                    dependencies.add(
+                        CONFIGURATION_TEST_IMPLEMENTATION,
+                        getCommonKotlinTest()
+                    )
                 }
             }
         project.subprojects.filter { it.isDto() }.forEach {
